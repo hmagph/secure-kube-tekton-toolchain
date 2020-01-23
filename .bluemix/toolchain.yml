@@ -10,7 +10,8 @@ template:
   icon: secure-lock-kubernetes.svg
   required:
     - build
-    - repo
+    - app_repo
+    - pipeline_repo
   info:
     git url: >
       "[" + $env.repository + "]" +
@@ -25,7 +26,7 @@ toolchain:
     getting_started:
       $ref: "#/messages/template.gettingStarted"
 services:
-  repo:
+  app_repo:
     service_id: >
       $env.source_provider ? $env.source_provider : 'hostedgit'
     parameters:
@@ -39,18 +40,36 @@ services:
       type: $env.type || 'clone'
       has_issues: true
       enable_traceability: true
+  pipeline_repo:
+    service_id: >
+      $env.source_provider ? $env.source_provider : 'hostedgit'
+    parameters:
+      repo_name: 'pipeline-{{timestamp}}'
+      repo_url: >
+        $env.type === 'link' ? 
+          $env.pipeline_repo : 'https://github.com/open-toolchain/secure-kube-tekton-toolchain'
+      source_repo_url: >
+        $env.type === 'fork' || $env.type === 'clone' ? 
+          $env.pipelinee_repo : 'https://github.com/open-toolchain/secure-kube-tekton-toolchain'
+      type: $env.type || 'clone'
+      has_issues: false
+      enable_traceability: false
   build:
     service_id: pipeline
     parameters:
       services:
-        - repo
-      name: '{{services.repo.parameters.repo_name}}'
+        - app_repo
+        - pipeline_repo
+      name: '{{services.repo.parameters.app_repo_name}}'
       ui-pipeline: true
       configuration:
         content:
           $text: pipeline.yml
         env:
-          GIT_REPO: repo
+          APP_REPO: app_repo
+          PIPELINE_REPO: pipeline_repo
+          REPOSITORY: '{{services.app_repo.parameters.source_repo_url}}'
+          REVISION: master
           APP_NAME: '{{form.pipeline.parameters.app-name}}'
           REGISTRY_REGION_ID: '{{form.pipeline.parameters.registry-region}}'
           REGISTRY_NAMESPACE: '{{form.pipeline.parameters.registry-namespace}}'
@@ -65,7 +84,7 @@ services:
 form:
   pipeline:
     parameters:
-      app-name: '{{services.repo.parameters.repo_name}}'
+      app-name: '{{services.app_repo.parameters.repo_name}}'
       prod-cluster-namespace: prod
     schema:
       $ref: deploy.json
