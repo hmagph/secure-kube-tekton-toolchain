@@ -60,7 +60,8 @@ services:
       services:
         - app_repo
         - pipeline_repo
-      name: '{{services.repo.parameters.app_repo_name}}'
+      name: '{{services.app_repo.parameters.repo_name}}'
+      type: tekton
       ui-pipeline: true
       configuration:
         content:
