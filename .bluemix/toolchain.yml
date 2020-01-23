@@ -47,10 +47,10 @@ services:
       repo_name: 'pipeline-{{timestamp}}'
       repo_url: >
         $env.type === 'link' ? 
-          $env.pipeline_repo : 'https://github.com/open-toolchain/secure-kube-tekton-toolchain'
+          $env.pipeline_repo : 'https://github.com/hmagph/secure-kube-tekton-toolchain'
       source_repo_url: >
         $env.type === 'fork' || $env.type === 'clone' ? 
-          $env.pipelinee_repo : 'https://github.com/open-toolchain/secure-kube-tekton-toolchain'
+          $env.pipelinee_repo : 'https://github.com/hmagph/secure-kube-tekton-toolchain'
       type: $env.type || 'clone'
       has_issues: false
       enable_traceability: false
